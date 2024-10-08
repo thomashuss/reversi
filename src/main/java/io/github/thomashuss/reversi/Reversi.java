@@ -223,8 +223,13 @@ public class Reversi
                 m.setNext(next);
             } else if (!m.shouldSkipNext()) {
                 next = think(m.getWhoseTurn(), m.getBoard(), MAX_DEPTH);
-                if (!next.isEmpty()) m.setSkipNext();
-                else next = EMPTY_M;
+                if (next.isEmpty()) {
+                    next = EMPTY_M;
+                } else {
+                    next.sort(Move::sortComparator);
+                    m.setSkipNext();
+                    m.setScore(m.getScore() + next.get(0).getScore());
+                }
                 m.setNext(next);
             }
         } else if (!next.isEmpty()) {
