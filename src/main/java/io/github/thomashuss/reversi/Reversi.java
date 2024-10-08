@@ -71,8 +71,8 @@ public class Reversi
             if (m != null) {
                 board = m.getBoard();
                 lastColor = otherColor(myColor);
-                int max = moveList.get(0).getScore();
-                double thisScore = max == 0 ? 0.0 : (double) m.getScore() / max;
+                double thisScore = computeScore(m.getScore(),
+                        moveList.get(0).getScore(), moveList.get(moveList.size() - 1).getScore());
                 double oldHumanAvg = humanAvg;
                 updateHumanAvg(thisScore);
                 logger.accept("Your average is " + oldHumanAvg + ".  Your move scored " + thisScore
@@ -89,16 +89,17 @@ public class Reversi
         if (lastMove != null) throw new RuntimeException();
         if (lastColor != myColor && !moveList.isEmpty()) {
             lastColor = myColor;
-            int idx = Collections.binarySearch(moveList, (int) Math.ceil(humanAvg * moveList.get(0).getScore()));
+            double target = humanAvg >= 0 ? Math.ceil(humanAvg * moveList.get(0).getScore())
+                    : Math.floor(humanAvg * moveList.get(moveList.size() - 1).getScore());
+            int idx = Collections.binarySearch(moveList, (int) target);
             if (idx < 0) idx = Math.min(-idx - 1, moveList.size() - 1);
             Move m = moveList.get(idx);
-            int max = moveList.get(0).getScore();
             synchronized (this) {
                 board = m.getBoard();
             }
             logger.accept("Human average is " + humanAvg + ".  Choosing move of score "
-                    + (max == 0 ? 0.0 : (double) m.getScore() / max) + " from " + moveList.size()
-                    + " possibilities.");
+                    + computeScore(m.getScore(), moveList.get(0).getScore(), moveList.get(moveList.size() - 1).getScore())
+                    + " from " + moveList.size() + " possibilities.");
             lastMove = m;
             return m.getRoot();
         }
@@ -403,6 +404,18 @@ public class Reversi
 
         if (!pieces.isEmpty()) pieces.add(encode(row, col));
         return pieces;
+    }
+
+    private static double computeScore(int moveScore, int maxScore, int minScore)
+    {
+        if (maxScore == 0) {
+            if (moveScore < 0) return -1.0;
+            else return 1.0;
+        }
+        if (moveScore >= 0) {
+            return (double) moveScore / maxScore;
+        }
+        return (double) -moveScore / minScore;
     }
 
     private static byte otherColor(byte color)

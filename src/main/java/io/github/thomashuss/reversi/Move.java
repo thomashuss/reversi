@@ -15,7 +15,7 @@ class Move
     Move(long root, int score, List<Move> next, byte whoseTurn, byte[][] board)
     {
         this.root = root;
-        this.score = Math.max(0, score);
+        this.score = score;
         this.next = next;
         this.whoseTurn = whoseTurn;
         this.board = board;
@@ -33,7 +33,7 @@ class Move
 
     public void setScore(int score)
     {
-        this.score = Math.max(0, score);
+        this.score = score;
     }
 
     public List<Move> getNext()
