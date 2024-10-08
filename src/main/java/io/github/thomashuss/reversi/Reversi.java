@@ -111,8 +111,11 @@ public class Reversi
     public void think()
     throws Endgame, SkipNextMove
     {
-        if (lastMove != null) thinkAbout(lastMove);
-        lastMove = null;
+        try {
+            if (lastMove != null) thinkAbout(lastMove);
+        } finally {
+            lastMove = null;
+        }
     }
 
     /**
