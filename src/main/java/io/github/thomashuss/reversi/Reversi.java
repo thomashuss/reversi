@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 public class Reversi
 {
     public static final double DEFAULT_ALPHA = 0.4;
-    private static final List<Long> EMPTY_L = List.of();
     private static final List<Move> EMPTY_M = List.of();
     private static final byte MAX_DEPTH = 4;
     static final int ROWS = 8;
@@ -124,12 +123,6 @@ public class Reversi
      */
     public void init()
     {
-        byte[][] board = new byte[ROWS][COLS];
-        synchronized (this) {
-            for (int i = 0; i < ROWS; i++) {
-                System.arraycopy(this.board[i], 0, board[i], 0, COLS);
-            }
-        }
         List<Move> thoughts = think(DARK, board, (byte) 0);
         thoughts.sort(Move::sortComparator);
         if (myColor == DARK) {
@@ -255,27 +248,20 @@ public class Reversi
     private static List<Move> think(byte color, byte[][] board, byte depth)
     {
         byte[][] testBoard;
-        List<Long> testPieces;
+        CopyOnWriteBoard cowBoard = new CopyOnWriteBoard();
         int score;
         List<Move> childMoves;
         List<Move> moves = new ArrayList<>();
+        cowBoard.setBoard(board);
 
         for (int i = 0; i < ROWS; i++) {
             for (int j = 0; j < COLS; j++) {
-                testPieces = getPieces(board, color, i, j);
+                getBoardAfterMove(cowBoard, color, i, j);
 
-                if (!testPieces.isEmpty()) {
-                    testBoard = new byte[ROWS][COLS];
-                    for (int r = 0; r < ROWS; r++) {
-                        System.arraycopy(board[r], 0, testBoard[r], 0, COLS);
-                    }
-
-                    for (long l : testPieces) {
-                        testBoard[getRow(l)][getCol(l)] = color;
-                    }
-
+                if (cowBoard.getPieceCount() != 0) {
+                    testBoard = cowBoard.getBoard();
                     childMoves = null;
-                    score = testPieces.size();
+                    score = cowBoard.getPieceCount();
                     if (depth != MAX_DEPTH) {
                         childMoves = think(otherColor(color), testBoard, (byte) (depth + 1));
                         if (childMoves.isEmpty()) childMoves = EMPTY_M;
@@ -285,6 +271,7 @@ public class Reversi
                         }
                     }
                     moves.add(new Move(encode(i, j), score, childMoves, color, testBoard));
+                    cowBoard.setBoard(board);
                 }
             }
         }
@@ -304,106 +291,101 @@ public class Reversi
                 || check(board, color, row - 1, col + 1) || check(board, color, row + 1, col - 1));
     }
 
-    private static List<Long> lazilyCreatePieceList(List<Long> list, long l)
-    {
-        if (list.isEmpty()) list = new ArrayList<>(ROWS);
-        list.add(l);
-        return list;
-    }
-
-    private static List<Long> getPieces(byte[][] board, byte color, int row, int col)
+    private static void getBoardAfterMove(CopyOnWriteBoard board, byte color, int row, int col)
     {
         final byte other = otherColor(color);
-        if (!couldBeLegal(board, other, row, col)) return EMPTY_L;
-        List<Long> pieces = EMPTY_L;
+        if (!couldBeLegal(board.getBoard(), other, row, col)) return;
         int i, j;
 
         // check down
         i = row + 1;
-        while (i < ROWS && board[i][col] == other) {
+        while (i < ROWS && board.at(i, col) == other) {
             i++;
         }
-        if (i < ROWS && board[i][col] == color) {
-            for (int k = row + 1; k < i; k++) pieces = lazilyCreatePieceList(pieces, encode(k, col));
+        if (i < ROWS && board.at(i, col) == color) {
+            for (int k = row + 1; k < i; k++)
+                board.mark(k, col, color);
         }
 
         // check up
         i = row - 1;
-        while (i >= 0 && board[i][col] == other) {
+        while (i >= 0 && board.at(i, col) == other) {
             i--;
         }
-        if (i >= 0 && board[i][col] == color) {
-            for (int k = row - 1; k > i; k--) pieces = lazilyCreatePieceList(pieces, encode(k, col));
+        if (i >= 0 && board.at(i, col) == color) {
+            for (int k = row - 1; k > i; k--)
+                board.mark(k, col, color);
         }
 
         // check left
         i = col - 1;
-        while (i >= 0 && board[row][i] == other) {
+        while (i >= 0 && board.at(row, i) == other) {
             i--;
         }
-        if (i >= 0 && board[row][i] == color) {
-            for (int k = col - 1; k > i; k--) pieces = lazilyCreatePieceList(pieces, encode(row, k));
+        if (i >= 0 && board.at(row, i) == color) {
+            for (int k = col - 1; k > i; k--)
+                board.mark(row, k, color);
         }
 
         // check right
         i = col + 1;
-        while (i < COLS && board[row][i] == other) {
+        while (i < COLS && board.at(row, i) == other) {
             i++;
         }
-        if (i < COLS && board[row][i] == color) {
-            for (int k = col + 1; k < i; k++) pieces = lazilyCreatePieceList(pieces, encode(row, k));
+        if (i < COLS && board.at(row, i) == color) {
+            for (int k = col + 1; k < i; k++)
+                board.mark(row, k, color);
         }
 
         // check up-left
         i = row - 1;
         j = col - 1;
-        while (i >= 0 && j >= 0 && board[i][j] == other) {
+        while (i >= 0 && j >= 0 && board.at(i, j) == other) {
             i--;
             j--;
         }
-        if (i >= 0 && j >= 0 && board[i][j] == color) {
+        if (i >= 0 && j >= 0 && board.at(i, j) == color) {
             for (int k = row - 1, l = col - 1; k > i && l > j; k--, l--)
-                pieces = lazilyCreatePieceList(pieces, encode(k, l));
+                board.mark(k, l, color);
         }
 
         // check up-right
         i = row - 1;
         j = col + 1;
-        while (i >= 0 && j < COLS && board[i][j] == other) {
+        while (i >= 0 && j < COLS && board.at(i, j) == other) {
             i--;
             j++;
         }
-        if (i >= 0 && j < COLS && board[i][j] == color) {
+        if (i >= 0 && j < COLS && board.at(i, j) == color) {
             for (int k = row - 1, l = col + 1; k > i && l < j; k--, l++)
-                pieces = lazilyCreatePieceList(pieces, encode(k, l));
+                board.mark(k, l, color);
         }
 
         // check down-right
         i = row + 1;
         j = col + 1;
-        while (i < ROWS && j < COLS && board[i][j] == other) {
+        while (i < ROWS && j < COLS && board.at(i, j) == other) {
             i++;
             j++;
         }
-        if (i < ROWS && j < COLS && board[i][j] == color) {
+        if (i < ROWS && j < COLS && board.at(i, j) == color) {
             for (int k = row + 1, l = col + 1; k < i && l < j; k++, l++)
-                pieces = lazilyCreatePieceList(pieces, encode(k, l));
+                board.mark(k, l, color);
         }
 
         // check down-left
         i = row + 1;
         j = col - 1;
-        while (i < ROWS && j >= 0 && board[i][j] == other) {
+        while (i < ROWS && j >= 0 && board.at(i, j) == other) {
             i++;
             j--;
         }
-        if (i < ROWS && j >= 0 && board[i][j] == color) {
+        if (i < ROWS && j >= 0 && board.at(i, j) == color) {
             for (int k = row + 1, l = col - 1; k < i && l > j; k++, l--)
-                pieces = lazilyCreatePieceList(pieces, encode(k, l));
+                board.mark(k, l, color);
         }
 
-        if (!pieces.isEmpty()) pieces.add(encode(row, col));
-        return pieces;
+        if (board.getPieceCount() != 0) board.mark(row, col, color);
     }
 
     private static double computeScore(int moveScore, int maxScore, int minScore)
