@@ -34,10 +34,9 @@ public class CopyOnWriteBoard
 
     private void copy()
     {
-        final int cols = board[0].length;
-        byte[][] copied = new byte[board.length][cols];
-        for (int i = 0; i < board.length; i++) {
-            System.arraycopy(board[i], 0, copied[i], 0, cols);
+        byte[][] copied = new byte[Reversi.ROWS][Reversi.COLS];
+        for (int i = 0; i < Reversi.ROWS; i++) {
+            System.arraycopy(board[i], 0, copied[i], 0, Reversi.COLS);
         }
         board = copied;
     }
