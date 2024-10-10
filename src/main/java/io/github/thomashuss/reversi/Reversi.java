@@ -9,13 +9,13 @@ import java.util.function.Consumer;
 
 public class Reversi
 {
-    public static final double DEFAULT_ALPHA = 0.4;
     private static final List<Move> EMPTY_M = List.of();
     private static final byte MAX_DEPTH = 4;
-    static final int ROWS = 8;
-    static final int COLS = 8;
-    static final byte DARK = 1;
-    static final byte LIGHT = 2;
+    public static final byte DARK = 1;
+    public static final byte LIGHT = 2;
+    public static final double DEFAULT_ALPHA = 0.4;
+    public static final int COLS = 8;
+    public static final int ROWS = 8;
 
     private final byte myColor;
     private boolean game;

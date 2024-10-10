@@ -1,32 +1,32 @@
 package io.github.thomashuss.reversi;
 
-public class CopyOnWriteBoard
+class CopyOnWriteBoard
 {
     private byte[][] board;
     private int pieceCount;
 
-    public void setBoard(byte[][] board)
+    void setBoard(byte[][] board)
     {
         this.board = board;
         pieceCount = 0;
     }
 
-    public int getPieceCount()
+    int getPieceCount()
     {
         return pieceCount;
     }
 
-    public byte[][] getBoard()
+    byte[][] getBoard()
     {
         return board;
     }
 
-    public byte at(int row, int col)
+    byte at(int row, int col)
     {
         return board[row][col];
     }
 
-    public void mark(int row, int col, byte color)
+    void mark(int row, int col, byte color)
     {
         if (pieceCount++ == 0) copy();
         board[row][col] = color;

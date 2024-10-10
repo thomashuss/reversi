@@ -21,47 +21,47 @@ class Move
         this.board = board;
     }
 
-    public long getRoot()
+    long getRoot()
     {
         return root;
     }
 
-    public int getScore()
+    int getScore()
     {
         return score;
     }
 
-    public void setScore(int score)
+    void setScore(int score)
     {
         this.score = score;
     }
 
-    public List<Move> getNext()
+    List<Move> getNext()
     {
         return next;
     }
 
-    public void setNext(List<Move> next)
+    void setNext(List<Move> next)
     {
         this.next = next;
     }
 
-    public byte getWhoseTurn()
+    byte getWhoseTurn()
     {
         return whoseTurn;
     }
 
-    public boolean shouldSkipNext()
+    boolean shouldSkipNext()
     {
         return skip;
     }
 
-    public void setSkipNext()
+    void setSkipNext()
     {
         skip = true;
     }
 
-    public byte[][] getBoard()
+    byte[][] getBoard()
     {
         return board;
     }
@@ -72,7 +72,7 @@ class Move
         return score - this.score;
     }
 
-    public static int sortComparator(Move l, Move r)
+    static int sortComparator(Move l, Move r)
     {
         return r.getScore() - l.getScore();
     }

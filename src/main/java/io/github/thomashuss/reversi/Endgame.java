@@ -1,10 +1,11 @@
 package io.github.thomashuss.reversi;
 
 public class Endgame
-    extends Exception
+        extends Exception
 {
     private final int darkScore;
     private final int lightScore;
+
     public Endgame(int darkScore, int lightScore)
     {
         this.darkScore = darkScore;

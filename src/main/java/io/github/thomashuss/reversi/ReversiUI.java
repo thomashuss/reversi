@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 public class ReversiUI
         extends JFrame
 {
-    private final JButton[][] board;
     private static final String DARK = "●";
     private static final String LIGHT = "○";
     private static final String[] PIECES = {"", DARK, LIGHT};
@@ -36,6 +35,8 @@ public class ReversiUI
     private static final int INDICATOR_DELAY = 300;
     private static final Color DEFAULT_COLOR = Color.LIGHT_GRAY;
     private static final Color INDICATOR_COLOR = Color.YELLOW;
+
+    private final JButton[][] board;
     private final Timer computerPlayTimer;
     private final DefaultListModel<String> log;
     private final JList<String> logList;
