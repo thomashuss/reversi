@@ -110,9 +110,9 @@ public class Reversi
         if (lastMove != null) throw new RuntimeException();
         if (lastColor != myColor && !moveList.isEmpty()) {
             lastColor = myColor;
-            double target = humanAvg >= 0 ? Math.ceil(humanAvg * moveList.get(0).getScore())
-                    : Math.floor(humanAvg * moveList.get(moveList.size() - 1).getScore());
-            int idx = Collections.binarySearch(moveList, (int) target);
+            int idx = Collections.binarySearch(moveList, (int)
+                    (humanAvg >= 0 ? Math.ceil(humanAvg * Math.abs(moveList.get(0).getScore()))
+                    : Math.floor(humanAvg * Math.abs(moveList.get(moveList.size() - 1).getScore()))));
             if (idx < 0) idx = Math.min(-idx - 1, moveList.size() - 1);
             Move m = moveList.get(idx);
             board = m.getBoard();
