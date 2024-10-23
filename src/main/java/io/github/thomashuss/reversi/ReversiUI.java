@@ -21,7 +21,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayDeque;
 import java.util.concurrent.ExecutionException;
 
 public class ReversiUI
@@ -39,7 +38,6 @@ public class ReversiUI
     private static final Color INDICATOR_COLOR = Color.YELLOW;
 
     private final JButton[][] board;
-    private final ArrayDeque<JButton> indicated;
     private final Timer computerPlayTimer;
     private final Timer indicateTimer;
     private final DefaultListModel<String> log;
@@ -47,6 +45,7 @@ public class ReversiUI
     private final JLabel alphaLabel;
     private final JSlider alphaSlider;
     private final Reversi reversi;
+    private JButton indicated;
     private boolean thinking;
 
     private ReversiUI()
@@ -81,7 +80,6 @@ public class ReversiUI
                 btn.addActionListener(new PlayListener(i, j));
             }
         }
-        indicated = new ArrayDeque<>(1);
 
         JPanel topPanel = new JPanel();
         JButton resetBtn = new JButton("New game");
@@ -155,15 +153,16 @@ public class ReversiUI
     {
         JButton btn = board[row][col];
         btn.setBackground(INDICATOR_COLOR);
-        indicated.add(btn);
+        if (indicated != null) indicated.setBackground(DEFAULT_COLOR);
+        indicated = btn;
         indicateTimer.start();
     }
 
     private void unIndicate()
     {
-        JButton b;
-        if ((b = indicated.poll()) != null) {
-            b.setBackground(DEFAULT_COLOR);
+        if (indicated != null) {
+            indicated.setBackground(DEFAULT_COLOR);
+            indicated = null;
         }
     }
 
